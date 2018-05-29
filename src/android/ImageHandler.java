@@ -919,8 +919,7 @@ public class ImageHandler extends CordovaPlugin {
     }
 
      /**
-     *  will customstamp the image with the current time
-     *  and date
+     *  will customstamp the image with an user's text.
      *  @param source image to customstamp
      */
     private Bitmap addStamp(Bitmap source, String stamp){
