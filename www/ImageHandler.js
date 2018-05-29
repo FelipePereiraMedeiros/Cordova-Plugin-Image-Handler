@@ -178,7 +178,44 @@
 
 	}
 
+	/**
+	* @name customstamp
+	* @param {object} options
+	* @param {function} cb
+	* @description This function will stamp an image with a string.
+	*/
+	imageHandler.customstamp = function customstamp(options, cb) {
+		var template = {
+			currentDirectory: null,
+			currentFilename: null,
+			destDirectory: null,
+			destFilename: null
+		}
 
+		var results = decorate(template, options);
+		if(isEmpty(results.currentDirectory)
+			|| isEmpty(results.currentFilename)){
+			cb("One or more parameters are undefined or empty.");
+			return;
+		}
+
+		//do magic here
+		exec(
+		 	 function(winParam) {
+	 	 		cb(null, winParam);
+	 		 },
+             function(error) {
+             	cb(error);
+             },
+             "ImageHandler",
+             "customstamp",
+             [results.currentDirectory
+             , results.currentFilename
+             , results.destDirectory
+             , results.destFilename]);
+  
+	}
+	
 	/**
 	* @name thumbnail
 	* @param {object} options
