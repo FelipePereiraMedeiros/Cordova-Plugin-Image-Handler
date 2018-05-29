@@ -61,7 +61,13 @@ public class ImageHandler extends CordovaPlugin {
                     timestamp(callbackContext, args);
                 }
             });
-        }else{
+        }else if(action.equals("customstamp")){
+            cordova.getThreadPool().execute(new Runnable() {
+                public void run() {
+                    customstamp(callbackContext, args);
+                }
+            });
+	}else{
             return false;
         }
 
@@ -125,7 +131,7 @@ public class ImageHandler extends CordovaPlugin {
 		        return;
 		    }
 		
-		    //resize the image
+		    //add time stamp to image
 		    Bitmap timestampedImage = addTimeStamp(currentImage);
 		    if (timestampedImage == null) {
 		        callbackContext.error("Could not timestamp image");
@@ -153,6 +159,92 @@ public class ImageHandler extends CordovaPlugin {
 		}
     }
 
+     /**
+     * This method will add a customstamp to the photo.
+     * @param callbackContext callback to respond with
+     * @param args arguments
+     */
+    private void customstamp(CallbackContext callbackContext, JSONArray args){
+	    	String currentDirectory
+	        , currentFilename
+	        , currentImagePath
+	        , destDirectory
+	        , destFilename
+	        , destImagePath
+		, stamp;
+	        
+	        int imageQuality = 100;
+		
+		try{
+		    currentDirectory = args.getString(0);
+		    currentFilename = args.getString(1);
+		    destDirectory = args.getString(2);
+		    destFilename = args.getString(3);
+			stamp = args.getString(4);
+		
+		}catch(JSONException e){
+		    e.printStackTrace();
+		    callbackContext.error("Could not parse the parameters");
+		    return;
+		}
+		
+		if(currentDirectory.equals("null")
+		        || currentFilename.equals("null")){
+		    callbackContext.error("Could not parse the parameters");
+		    return;
+		}
+		
+		currentDirectory = formatDirectory(currentDirectory);
+		destDirectory =
+		        formatDirectory((destDirectory.equals("null")) ? currentDirectory : destDirectory);
+		destFilename =  (destFilename.equals("null")) ? currentFilename : destFilename;
+		
+		try {
+		    destImagePath = constructImagePath(destDirectory, destFilename);
+		    currentImagePath = constructImagePath(currentDirectory, currentFilename);
+		    File currImage = new File(URI.create(currentImagePath));
+		
+		    //check if the image exists
+		    if (!currImage.exists()) {
+		        callbackContext.error("Image does not exist!");
+		        return;
+		    }
+		
+		    //get the image
+		    Bitmap currentImage = BitmapFactory.decodeFile(currImage.getPath());
+		    if (currentImage == null) {
+		        callbackContext.error("Could not load image to be resized");
+		        return;
+		    }
+		
+		    //put the stamp on image
+		    Bitmap stampedImage = addStamp(currentImage, stamp);
+		    if (stampedImage == null) {
+		        callbackContext.error("Could not customstamp image");
+		        return;
+		    }
+		
+		    //get the file to save image into
+		    File destImage = new File(URI.create(destImagePath));
+		    if(!ConstructFileStructure(destImage)){
+		        callbackContext.error("Could not create file structure");
+		        return;
+		    }
+		
+		    //save the image
+		    if (!saveImage(stampedImage, destImage, imageQuality)) {
+		        callbackContext.error("Could not save image");
+		        return;
+		    }
+		
+		    callbackContext.success(destImagePath); // Thread-safe.
+		
+		}catch(Exception e){
+		    e.printStackTrace();
+		    callbackContext.error("Could not save image");
+		}
+    }
+	
 
     /**
      * This method will attempt to save a base64 string to a jpg file with the
@@ -825,7 +917,37 @@ public class ImageHandler extends CordovaPlugin {
 
          return currentTimeStamp;
     }
+
+     /**
+     *  will customstamp the image with the current time
+     *  and date
+     *  @param source image to customstamp
+     */
+    private Bitmap addStamp(Bitmap source, String stamp){
+    	
+    	if(source == null){
+    		return null;
+    	}
+    	
+    	Bitmap bitmap = source.copy(source.getConfig(), true);
+    	Canvas canvas = new Canvas(bitmap);
+    	
+    	int smallest = (source.getWidth() < source.getHeight()) ? source.getWidth() : source.getHeight();
+    	
+    	int fontSize = smallest/20;
+    	int strokeSize = fontSize/10;
+    	
+    	int x = 10;
+    	int y = 10 + fontSize;
+    	
+    	Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    	paint.setColor(Color.WHITE);
+    	paint.setTextSize(fontSize);
+    	paint.setShadowLayer(strokeSize, 0, 0, Color.BLACK);
     
-
-
+    	canvas.drawText(stamp, x, y, paint);
+    	
+    	return bitmap;
+    	
+    }
 }
