@@ -1,0 +1,23 @@
+{
+  "name": "cordova-image-handler",
+  "version": "0.0.1",
+  "description": "Cordova Image Handler",
+  "cordova": {
+    "id": "cordova-image-handler",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "image",
+    "handler",
+    "image handler",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  
+  "license": "ISC"
+}
