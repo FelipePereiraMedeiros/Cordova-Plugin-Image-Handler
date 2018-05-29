@@ -7,6 +7,7 @@
 - (void) thumbnail:(CDVInvokedUrlCommand*)command;
 - (void) rotate:(CDVInvokedUrlCommand*)command;
 - (void) timestamp:(CDVInvokedUrlCommand*)command;
+- (void) customstamp:(CDVInvokedUrlCommand*)command;
 
 
 @end
